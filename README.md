@@ -1,4 +1,4 @@
-# Backend del proyecto instagram con Nextjs
+# Frontend del proyecto instagram con Nextjs
 
 ## Aviso
 
